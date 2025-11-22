@@ -26,6 +26,6 @@ import org.example.project.ui.screens.Auth.RegisterScreen
 @Preview
 fun App() {
     RecipeTheme {
-        LoginScreen()
+        RegisterScreen()
     }
 }
