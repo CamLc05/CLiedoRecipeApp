@@ -20,6 +20,7 @@ import cliedorecipeapp.composeapp.generated.resources.Res
 import cliedorecipeapp.composeapp.generated.resources.compose_multiplatform
 import org.example.project.ui.RecipeTheme
 import org.example.project.ui.screens.Auth.LoginScreen
+import org.example.project.ui.screens.Auth.RegisterScreen
 
 @Composable
 @Preview
