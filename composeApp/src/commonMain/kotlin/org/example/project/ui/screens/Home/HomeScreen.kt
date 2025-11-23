@@ -24,22 +24,31 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.example.project.ui.RecipeTheme
+import org.example.project.utils.hideKeyboard
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun HomeScreen() {
     val colors = MaterialTheme.colorScheme
     val container = if (isSystemInDarkTheme()) colors.surface else Color.White
-
+    val focusManager = LocalFocusManager.current
+    var prompt by remember {
+        mutableStateOf("")
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -105,14 +114,18 @@ fun HomeScreen() {
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth(),
-                value = "",
-                onValueChange = {},
+                value = prompt,
+                onValueChange = { prompt = it },
                 shape = CircleShape,
                 singleLine = true,
                 placeholder = { Text("Escribe tus ingredientes...") },
                 trailingIcon = {
                     IconButton(
-                        onClick = {}
+                        onClick = {
+                            hideKeyboard(
+                                focusManager = focusManager
+                            )
+                        }
                     ){
                         Icon(
                             imageVector = Icons.Default.AutoAwesome,
