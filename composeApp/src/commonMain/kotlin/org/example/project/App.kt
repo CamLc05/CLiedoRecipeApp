@@ -21,11 +21,12 @@ import cliedorecipeapp.composeapp.generated.resources.compose_multiplatform
 import org.example.project.ui.RecipeTheme
 import org.example.project.ui.screens.Auth.LoginScreen
 import org.example.project.ui.screens.Auth.RegisterScreen
+import org.example.project.ui.screens.Home.HomeScreen
 
 @Composable
 @Preview
 fun App() {
     RecipeTheme {
-        LoginScreen()
+        HomeScreen()
     }
 }
