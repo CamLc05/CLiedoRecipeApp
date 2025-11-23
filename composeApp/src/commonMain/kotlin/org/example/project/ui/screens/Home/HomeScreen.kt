@@ -5,6 +5,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,16 +16,22 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -40,14 +47,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.compose.AsyncImage
 import kotlinx.coroutines.launch
 import org.example.project.models.RecipePreview
 import org.example.project.ui.RecipeTheme
+import org.example.project.ui.components.LoadingOverlay
 import org.example.project.ui.components.RecipeCard
 import org.example.project.ui.viewmodels.HomeViewModel
 import org.example.project.utils.hideKeyboard
@@ -270,8 +280,178 @@ fun HomeScreen() {
                 )
             }
         }
+    }
 
+    if (vm.isLoading) {
+        LoadingOverlay()
+    }
 
+    // Modal de receta generada
+    if (vm.showSheet) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                scope.launch {
+                    vm.showSheet = false
+                    sheetState.hide()
+                }
+            },
+            sheetState = sheetState,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 10.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                AsyncImage(
+                    model = vm.generatedRecipe?.imageUrl,
+                    contentDescription = vm.generatedRecipe?.title ?: "Sin título",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp)
+                        .clip(RoundedCornerShape(16.dp)),
+                    contentScale = ContentScale.Crop
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                Text(
+                    text = vm.generatedRecipe?.title ?: "Sin título",
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                    color = colors.onSurface,
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                // Estrellas
+                Row(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(colors.primary.copy(alpha = 0.15f))
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Star Icon",
+                        tint = colors.primary,
+                    )
+                    Text(
+                        text = "${vm.generatedRecipe?.stars}",
+                        color = colors.onSurface,
+                        fontWeight = FontWeight.Bold
+                    )
+                    // Tiempo de preparación
+                    Icon(
+                        imageVector = Icons.Default.Schedule,
+                        contentDescription = "Time Icon",
+                        tint = colors.primary,
+                    )
+                    Text(
+                        text = "${vm.generatedRecipe?.minutes} min",
+                        color = colors.onSurface,
+                    )
+                    Text(
+                        text = "${vm.generatedRecipe?.category}",
+                        color = colors.onSurface,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                Text(
+                    text = "Preparación:",
+                    color = colors.onSurface,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val ingredients = vm.generatedRecipe?.ingredients ?: listOf()
+                    ingredients.forEach { ingredient ->
+                        Text(
+                            text = ingredient,
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .background(colors.primary.copy(alpha = 0.1f))
+                                .padding(horizontal = 20.dp, vertical = 10.dp),
+                            color = colors.primary,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    text = "Instrucciones:",
+                    color = colors.onSurface,
+                    fontWeight = FontWeight.Bold
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    val instructions = vm.generatedRecipe?.instructions ?: listOf()
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // Lista de pasos numerados
+                        instructions.forEachIndexed { index, instruction ->
+                            Row(
+                                verticalAlignment = Alignment.Top,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "${index + 1}. ",
+                                    color = colors.primary,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = instruction,
+                                    color = colors.onSurface,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        }
+
+                        Spacer(Modifier.height(20.dp))
+
+                        // Botón alineado a la derecha
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Button(
+                                onClick = {
+                                    vm.hidemodal()
+                                    scope.launch {
+                                        vm.showSheet = false
+                                        sheetState.hide()
+                                    }
+                                },
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text(
+                                    text = "Cerrar",
+                                    color = colors.onPrimary
+                                )
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
     }
 }
 
