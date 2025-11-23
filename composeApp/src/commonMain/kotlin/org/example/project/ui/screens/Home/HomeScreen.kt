@@ -16,20 +16,24 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,18 +45,24 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
+import org.example.project.models.RecipePreview
 import org.example.project.ui.RecipeTheme
 import org.example.project.ui.components.RecipeCard
 import org.example.project.ui.viewmodels.HomeViewModel
 import org.example.project.utils.hideKeyboard
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import kotlin.text.category
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen() {
     val colors = MaterialTheme.colorScheme
     val container = if (isSystemInDarkTheme()) colors.surface else Color.White
     val vm: HomeViewModel = viewModel()
     val focusManager = LocalFocusManager.current
+    val scope = rememberCoroutineScope()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     var prompt by remember {
         mutableStateOf("")
     }
@@ -173,12 +183,95 @@ fun HomeScreen() {
                     RecipeCard(
                         recipe,
                         onClick = {
-
+                            scope.launch {
+                                val recipePreview = RecipePreview(
+                                    title = recipe.title,
+                                    category = recipe.category,
+                                    imageUrl = recipe.imageUrl,
+                                    ingredients = recipe.ingredients,
+                                    instructions = recipe.instructions,
+                                    minutes = recipe.minutes,
+                                    stars = recipe.stars,
+                                    prompt = ""
+                                )
+                                vm.showModalFromList(recipePreview)
+                                if (!sheetState.isVisible) sheetState.show()
+                            }
                         }
                     )
                 }
             }
         }
+
+        item {
+            val tags = listOf(
+                "Rápidas (10 min)",
+                "Pocas calorías",
+                "Sin horno",
+                "Desayunos"
+            )
+
+            Text(
+                text = "Ideas rápidas",
+                color = colors.onSurface,
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+            )
+
+            Spacer(Modifier.height(10.dp))
+
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                items(tags) { tag ->
+                    Text(
+                        text = tag,
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(colors.primary.copy(alpha = 0.1f))
+                            .padding(horizontal = 20.dp, vertical = 10.dp),
+                        color = colors.primary,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = colors.surfaceVariant.copy(alpha = 0.4f),
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "¿No sabes qué cocinar hoy?",
+                        color = colors.onSurface,
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold)
+                    )
+                    Text(
+                        text = "Genera una receta aleatoria",
+                        color = colors.onSurface.copy(alpha = 0.7f),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+
+                Icon(
+                    imageVector = Icons.Default.AutoAwesome,
+                    contentDescription = "Generar receta",
+                    tint = colors.primary,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        }
+
+
     }
 }
 
