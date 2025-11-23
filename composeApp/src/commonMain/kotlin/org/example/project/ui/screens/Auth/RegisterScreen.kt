@@ -31,87 +31,79 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import org.example.project.ui.LoginScreenRoute
 import org.example.project.ui.RecipeTheme
+import org.example.project.ui.RegisterScreenRoute
 import org.example.project.ui.viewmodels.AuthViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
+
 @Composable
-fun RegisterScreen(){
+fun RegisterScreen(navController: NavController){
     val colors = MaterialTheme.colorScheme
     val authViewModel : AuthViewModel = viewModel()
-
-    var name by remember{
+    var name by remember {
         mutableStateOf("")
     }
-    var email by remember{
+    var email by remember {
         mutableStateOf("")
     }
-    var password by remember{
+    var password by remember {
         mutableStateOf("")
     }
-    var confirmPassword by remember{
+    var confirmedPassword  by remember {
         mutableStateOf("")
     }
-    Box(
+    Box (
         modifier = Modifier
             .fillMaxSize()
             .background(colors.background)
-
     ){
-        // Fondo
-        Column(
-            modifier = Modifier.fillMaxSize()
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp)
+                .clip(RoundedCornerShape(
+                    bottomStart = 50.dp,
+                    bottomEnd = 50.dp
+                ))
+                .background(colors.primary)
         )
-        {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp)
-                    .clip(RoundedCornerShape(
-                        bottomStart = 30.dp,
-                        bottomEnd = 30.dp
-                    ))
-                    .background(colors.primary)
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-            )
 
-        }
-
-        // Card
-        Column(
+        Column (
             modifier = Modifier
                 .align(Alignment.Center)
-                .padding(horizontal = 20.dp)
+                .fillMaxWidth()
                 .height(420.dp)
-                .width(340.dp)
-                .shadow(
-                    elevation = 8.dp,
-                    shape = RoundedCornerShape(24.dp)
-                )
-                .clip(RoundedCornerShape(24.dp))
+                .padding(horizontal = 20.dp)
+                .shadow(10.dp, RoundedCornerShape(40.dp))
+                .clip(RoundedCornerShape(40.dp))
                 .background(colors.surface),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        )
-        {
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Spacer(
+                modifier = Modifier
+                    .height(15.dp)
+            )
             Text(
-                text = "Crear cuenta",
+                text = "Crear Cuenta",
                 fontWeight = FontWeight.Bold,
                 fontSize = 30.sp
             )
-
             Spacer(
                 modifier = Modifier
                     .height(15.dp)
             )
-
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                placeholder = { Text("Nombre") },
+                placeholder = {
+                    Text(
+                        text = "Nombre"
+                    )
+                },
                 modifier = Modifier
                     .width(300.dp),
                 shape = RoundedCornerShape(30.dp),
@@ -119,16 +111,18 @@ fun RegisterScreen(){
                     cursorColor = colors.primary
                 )
             )
-
             Spacer(
                 modifier = Modifier
                     .height(15.dp)
             )
-
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
-                placeholder = { Text("Correo Electrónico") },
+                placeholder = {
+                    Text(
+                        text = "Correo Electrónico"
+                    )
+                },
                 modifier = Modifier
                     .width(300.dp),
                 shape = RoundedCornerShape(30.dp),
@@ -136,16 +130,18 @@ fun RegisterScreen(){
                     cursorColor = colors.primary
                 )
             )
-
             Spacer(
                 modifier = Modifier
                     .height(15.dp)
             )
-
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
-                placeholder = { Text("Contraseña") },
+                placeholder = {
+                    Text(
+                        text = "Contraseña"
+                    )
+                },
                 modifier = Modifier
                     .width(300.dp),
                 shape = RoundedCornerShape(30.dp),
@@ -153,16 +149,18 @@ fun RegisterScreen(){
                     cursorColor = colors.primary
                 )
             )
-
             Spacer(
                 modifier = Modifier
                     .height(15.dp)
             )
-
             OutlinedTextField(
-                value = confirmPassword,
-                onValueChange = { confirmPassword = it },
-                placeholder = { Text("Confirmar contraseña") },
+                value = confirmedPassword,
+                onValueChange = { confirmedPassword = it },
+                placeholder = {
+                    Text(
+                        text = "Confirmar Contraseña"
+                    )
+                },
                 modifier = Modifier
                     .width(300.dp),
                 shape = RoundedCornerShape(30.dp),
@@ -170,35 +168,49 @@ fun RegisterScreen(){
                     cursorColor = colors.primary
                 )
             )
-
             Spacer(
                 modifier = Modifier
                     .height(15.dp)
             )
+
             Button(
                 modifier = Modifier
                     .width(300.dp)
                     .height(50.dp),
                 onClick = {
-                    if (name.isBlank() || email.isBlank() || password.isBlank() || confirmPassword.isBlank())
+                    if(name.isBlank() ||
+                        email.isBlank() ||
+                        password.isBlank() ||
+                        confirmedPassword.isBlank()
+                    )
                     {
-                        println("Por favor, complete todos los campos.")
-                        return@Button
-                    }
-                    if (password != confirmPassword)
-                    {
-                        println("Las contraseñas no coinciden.")
+                        println("Faltan valores por completar")
                         return@Button
                     }
 
+                    if(password != confirmedPassword){
+                        println("Las contraseñas nos son iguales")
+                        return@Button
+                    }
+
+                    // EXPRESIONES REGULARES
+
                     authViewModel.register(
-                        name = "Camila Liedo 511",
-                        email = "cliedo@gmail.com",
-                        password = "12345")
-                },
-                colors = ButtonDefaults.buttonColors()
+                        name = name,
+                        email = email,
+                        password = password
+                    )
+
+                    navController.navigate(LoginScreenRoute) {
+                        popUpTo(RegisterScreenRoute) {
+                            inclusive = true
+                        }
+                    }
+                }
             ){
-                Text("Registrarse")
+                Text(
+                    text = "Registrarse"
+                )
             }
         }
     }
@@ -208,6 +220,6 @@ fun RegisterScreen(){
 @Composable
 fun RegisterScreenPreview(){
     RecipeTheme {
-        RegisterScreen()
+        RegisterScreen(navController = rememberNavController())
     }
 }

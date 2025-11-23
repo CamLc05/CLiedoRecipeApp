@@ -53,12 +53,18 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.launch
 import org.example.project.models.RecipePreview
+import org.example.project.models.RegisterBody
+import org.example.project.ui.HomeScreenRoute
+import org.example.project.ui.LoginScreenRoute
 import org.example.project.ui.RecipeTheme
 import org.example.project.ui.components.LoadingOverlay
 import org.example.project.ui.components.RecipeCard
+import org.example.project.ui.viewmodels.AuthViewModel
 import org.example.project.ui.viewmodels.HomeViewModel
 import org.example.project.utils.hideKeyboard
 import org.jetbrains.compose.ui.tooling.preview.Preview
@@ -66,7 +72,7 @@ import kotlin.text.category
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navController: NavController) {
     val colors = MaterialTheme.colorScheme
     val container = if (isSystemInDarkTheme()) colors.surface else Color.White
     val vm: HomeViewModel = viewModel()
@@ -76,7 +82,6 @@ fun HomeScreen() {
     var prompt by remember {
         mutableStateOf("")
     }
-
 
     LazyColumn(
         modifier = Modifier
@@ -120,7 +125,15 @@ fun HomeScreen() {
                     )
                 }
                 IconButton(
-                    onClick = {}
+                    onClick = {
+                        vm.logout()
+                        navController.navigate(LoginScreenRoute){
+                            popUpTo (HomeScreenRoute){
+                                inclusive = true
+                            }
+                        }
+
+                    }
                 ){
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Logout,
@@ -142,17 +155,20 @@ fun HomeScreen() {
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth(),
-                value = prompt,
-                onValueChange = { prompt = it },
+                value = vm.ingredients,
+                onValueChange = { vm.ingredients = it },
                 shape = CircleShape,
                 singleLine = true,
                 placeholder = { Text("Escribe tus ingredientes...") },
                 trailingIcon = {
                     IconButton(
                         onClick = {
-                            hideKeyboard(
-                                focusManager = focusManager
-                            )
+                            hideKeyboard(focusManager)
+                            vm.generateRecipe(){
+                                scope.launch {
+                                    sheetState.partialExpand()
+                                }
+                            }
                         }
                     ){
                         Icon(
@@ -446,6 +462,20 @@ fun HomeScreen() {
                                     color = colors.onPrimary
                                 )
                             }
+                            Button(
+                                onClick = {
+                                    scope.launch {
+                                        sheetState.hide()
+                                    }
+                                    vm.saveRecipeInDb()
+                                }
+                            ){
+                                Text(
+                                    text = "Guardar",
+                                    color = colors.onPrimary
+                                )
+
+                            }
                         }
                     }
                 }
@@ -459,6 +489,6 @@ fun HomeScreen() {
 @Composable
 fun HomeScreenPreview() {
     RecipeTheme {
-        HomeScreen()
+        HomeScreen(navController = rememberNavController())
     }
 }

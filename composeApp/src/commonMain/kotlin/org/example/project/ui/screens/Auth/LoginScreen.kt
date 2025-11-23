@@ -19,6 +19,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,13 +33,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import org.example.project.ui.HomeScreenRoute
+import org.example.project.ui.LoginScreenRoute
 import org.example.project.ui.OutlineDark
 import org.example.project.ui.RecipeTheme
+import org.example.project.ui.RegisterScreenRoute
 import org.example.project.ui.viewmodels.AuthViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
-fun LoginScreen(){
+fun LoginScreen(navController: NavController){
     val colors = MaterialTheme.colorScheme
     val authViewModel : AuthViewModel = viewModel()
 
@@ -47,6 +53,16 @@ fun LoginScreen(){
     }
     var password by remember {
         mutableStateOf("")
+    }
+
+    LaunchedEffect(authViewModel.isLogged){
+        if (authViewModel.isLogged){
+            navController.navigate(HomeScreenRoute){
+                popUpTo(LoginScreenRoute){
+                    inclusive = true
+                }
+            }
+        }
     }
     Box(
         modifier = Modifier
@@ -166,7 +182,11 @@ fun LoginScreen(){
                 color = colors.primary,
                 modifier = Modifier
                     .clickable {
-                        // navegacion
+                        navController.navigate(RegisterScreenRoute){
+                            popUpTo(LoginScreenRoute){
+                                inclusive = true
+                            }
+                        }
                     }
                     .padding(8.dp)
             )
@@ -179,6 +199,6 @@ fun LoginScreen(){
 @Composable
 fun LoginScreenPreview(){
     RecipeTheme {
-        LoginScreen()
+        LoginScreen(navController = rememberNavController())
     }
 }
