@@ -112,7 +112,8 @@ fun LoginScreen(navController: NavController){
             Text(
                 text = "Bienvenido",
                 fontWeight = FontWeight.Bold,
-                fontSize = 30.sp
+                fontSize = 30.sp,
+                color = colors.onSurface
             )
             Spacer(
                 modifier = Modifier
