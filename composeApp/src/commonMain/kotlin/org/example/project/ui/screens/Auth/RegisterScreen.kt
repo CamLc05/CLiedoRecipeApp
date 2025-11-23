@@ -30,12 +30,16 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.example.project.ui.RecipeTheme
+import org.example.project.ui.viewmodels.AuthViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun RegisterScreen(){
     val colors = MaterialTheme.colorScheme
+    val authViewModel : AuthViewModel = viewModel()
+
     var name by remember{
         mutableStateOf("")
     }
@@ -175,7 +179,23 @@ fun RegisterScreen(){
                 modifier = Modifier
                     .width(300.dp)
                     .height(50.dp),
-                onClick = {},
+                onClick = {
+                    if (name.isBlank() || email.isBlank() || password.isBlank() || confirmPassword.isBlank())
+                    {
+                        println("Por favor, complete todos los campos.")
+                        return@Button
+                    }
+                    if (password != confirmPassword)
+                    {
+                        println("Las contraseñas no coinciden.")
+                        return@Button
+                    }
+
+                    authViewModel.register(
+                        name = "Camila Liedo 511",
+                        email = "cliedo@gmail.com",
+                        password = "12345")
+                },
                 colors = ButtonDefaults.buttonColors()
             ){
                 Text("Registrarse")

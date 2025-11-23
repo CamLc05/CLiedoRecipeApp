@@ -34,11 +34,14 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.example.project.ui.OutlineDark
 import org.example.project.ui.RecipeTheme
+import org.example.project.ui.viewmodels.AuthViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
 fun LoginScreen(){
     val colors = MaterialTheme.colorScheme
+    val authViewModel : AuthViewModel = viewModel()
+
     var email by remember {
         mutableStateOf("")
     }
@@ -136,7 +139,17 @@ fun LoginScreen(){
                 modifier = Modifier
                     .width(300.dp)
                     .height(50.dp),
-                onClick = {},
+                onClick = {
+                    if (email.isBlank() || password.isBlank()) {
+                        println("Por favor, complete todos los campos.")
+                        return@Button
+                    }
+
+                    authViewModel.login(
+                        email = email,
+                        password = password
+                    )
+                },
                 colors = ButtonDefaults.buttonColors()
             ){
                 Text("Iniciar Sesión")
